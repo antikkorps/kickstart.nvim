@@ -5,6 +5,12 @@
 -- second `setup` remplace le précédent. On garde ainsi init.lua intact, ce qui évite
 -- les conflits lors des mises à jour de kickstart (voir NOTES_PERSO.md).
 
+-- mason-lspconfig active automatiquement tout outil installé dans Mason qui possède une
+-- config LSP dans nvim-lspconfig. C'est le cas de stylua, dont le serveur est lancé avec
+-- `stylua --lsp` — un flag que stylua 2.1.0 ne connaît pas, d'où une erreur à chaque
+-- fichier Lua ouvert. On le désactive : conform l'utilise déjà comme formateur.
+vim.lsp.enable('stylua', false)
+
 -- Filetypes formatés automatiquement à la sauvegarde
 local format_on_save_filetypes = {
   javascript = true,

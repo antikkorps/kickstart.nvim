@@ -32,11 +32,13 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | `matchup.lua` | vim-matchup (navigation `%` étendue) |
 | `formatting.lua` | prettier + format-on-save (surcouche du conform.nvim d'init.lua) |
 | `autotag.lua` | fermeture/renommage auto des balises HTML, JSX, Vue |
+| `autopairs.lua` | active `check_ts` sur le nvim-autopairs de kickstart |
 | `pack.lua` | commandes `:Pack` / `:PackUpdate` / `:PackClean` (confort autour de `vim.pack`) |
 
-Le seul changement dans les fichiers de kickstart lui-même :
+Les seuls changements dans les fichiers de kickstart lui-même :
 
-- `init.lua` : décommenter `require 'custom.plugins'` (SECTION 10).
+- `init.lua` : décommenter `require 'custom.plugins'` et
+  `require 'kickstart.plugins.autopairs'` (SECTION 10).
 - `.gitignore` : commenter `nvim-pack-lock.json` pour suivre le lockfile en version control.
 
 > Garder ces deux modifications aussi minimales que possible : ce sont les seuls points de
