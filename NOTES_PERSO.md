@@ -31,6 +31,7 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | `rainbow.lua` | rainbow-delimiters (parenthèses/balises colorées) |
 | `matchup.lua` | vim-matchup (navigation `%` étendue) |
 | `formatting.lua` | prettier + format-on-save (surcouche du conform.nvim d'init.lua) |
+| `pack.lua` | commandes `:Pack` / `:PackUpdate` / `:PackClean` (confort autour de `vim.pack`) |
 
 Le seul changement dans les fichiers de kickstart lui-même :
 
@@ -84,15 +85,22 @@ git checkout custom && git reset --hard master
 
 ### 3. Mettre à jour les plugins
 
-Plus de `:Lazy`. Désormais :
+Plus de `:Lazy`. Les commandes définies dans `lua/custom/plugins/pack.lua` :
 
-```vim
-:lua vim.pack.update(nil, { offline = true })  " inspecter l'état sans réseau
-:lua vim.pack.update()                          " récupérer les mises à jour
-```
+| Commande | Raccourci | Rôle |
+| :------- | :-------- | :--- |
+| `:Pack` | `<leader>pp` | état des plugins, sans réseau |
+| `:PackUpdate` | `<leader>pu` | chercher les mises à jour |
+| `:PackClean` | `<leader>pc` | supprimer les plugins retirés de la config |
 
-Dans le buffer qui s'ouvre : `:write` applique les mises à jour, `:quit` annule.
+Dans le buffer qui s'ouvre : **`:write` applique** les mises à jour, **`:quit` annule**.
 Penser ensuite à commiter `nvim-pack-lock.json`.
+
+`vim.pack` ne supprime jamais de lui-même un plugin retiré de la config : il reste sur le
+disque tant qu'on ne lance pas `:PackClean`.
+
+Les commandes brutes en dessous, si besoin : `:lua vim.pack.update(nil, { offline = true })`
+et `:lua vim.pack.update()`.
 
 ### 4. Forcer la mise à jour du fork distant (si `master` a été réinitialisée)
 
