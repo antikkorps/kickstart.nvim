@@ -31,6 +31,7 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | `rainbow.lua` | rainbow-delimiters (parenthèses/balises colorées) |
 | `matchup.lua` | vim-matchup (navigation `%` étendue) |
 | `formatting.lua` | prettier + format-on-save (surcouche du conform.nvim d'init.lua) |
+| `autotag.lua` | fermeture/renommage auto des balises HTML, JSX, Vue |
 | `pack.lua` | commandes `:Pack` / `:PackUpdate` / `:PackClean` (confort autour de `vim.pack`) |
 
 Le seul changement dans les fichiers de kickstart lui-même :
