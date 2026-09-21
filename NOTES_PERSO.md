@@ -36,6 +36,16 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | `pack.lua` | commandes `:Pack` / `:PackUpdate` / `:PackClean` (confort autour de `vim.pack`) |
 | `markdown.lua` | render-markdown.nvim : rendu du markdown dans le tampon (tableaux alignés) |
 
+### Raccourcis ajoutés par mes plugins
+
+| Raccourci | Mode | Action | Défini dans |
+| :-------- | :--- | :----- | :---------- |
+| `<leader>tm` | n | bascule le rendu markdown (`:RenderMarkdown toggle`) | `markdown.lua` |
+
+`<leader>t` est le groupe `[T]oggle` déjà déclaré par la `spec` de which-key dans
+`init.lua` (SECTION 4) : un raccourci de bascule ajouté ici y apparaît tout seul, il suffit
+de lui donner un `desc`. Taper `<leader>t` et attendre liste le groupe.
+
 Les seuls changements dans les fichiers de kickstart lui-même :
 
 - `init.lua` : décommenter `require 'custom.plugins'` et
