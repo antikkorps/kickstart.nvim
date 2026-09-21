@@ -45,6 +45,54 @@ Les seuls changements dans les fichiers de kickstart lui-même :
 > Garder ces deux modifications aussi minimales que possible : ce sont les seuls points de
 > conflit possibles lors d'un rebase.
 
+## Rendu markdown : le désactiver pour copier
+
+`markdown.lua` active render-markdown.nvim sur tous les fichiers `.md` — c'est ce qui
+redessine les tableaux du memento avec des bordures et des colonnes alignées.
+
+**Bascule :** `<leader>tm`, ou `:RenderMarkdown toggle`. Autres commandes utiles :
+`:RenderMarkdown disable` / `enable`, et `:RenderMarkdown buf_toggle` pour n'agir que sur
+le tampon courant.
+
+### Ce qui n'est PAS affecté : le yank
+
+Le rendu est fait d'`extmarks` et de texte virtuel — **le contenu du tampon n'est jamais
+modifié**. Un `yy` sur une ligne de tableau rend le markdown brut, y compris ce que le
+`conceallevel=3` masque à l'écran :
+
+```text
+affiché : │ Should have │ important, mais il existe un contournement │ douloureux │
+yanké   : | **S**hould have | important, mais il existe un contournement acceptable | … |
+```
+
+Donc pour copier **une ligne**, rien à désactiver. C'est le flux du memento
+(`m find` → éditeur → `yy` → coller) et il fonctionne tel quel.
+
+### Ce qui l'est : tout ce qui compte des lignes
+
+Le piège réel est ailleurs. Une cellule trop large est repliée sur plusieurs **lignes
+virtuelles**, qui n'existent pas dans le fichier. Un tableau de 4 lignes réelles peut en
+occuper 12 à l'écran, et les numéros de ligne sautent dans la gouttière.
+
+Conséquence : `V`, `yap`, `4yy`, `dd` et les comptes de lignes portent sur le **fichier**,
+pas sur ce qu'on voit. Sélectionner un tableau entier à l'œil donne systématiquement le
+mauvais nombre de lignes.
+
+**Réflexe : `<leader>tm` avant de sélectionner un bloc de tableau, puis `<leader>tm` à
+nouveau.** Utile aussi pour vérifier un échappement ou comparer à ce que Forgejo affichera.
+
+### Icônes
+
+`vim.g.have_nerd_font` est à `false` dans `init.lua`, donc `mini.icons` n'est pas
+initialisé. Les icônes par défaut de render-markdown sont des glyphes Nerd Font et
+s'afficheraient en carrés vides : `markdown.lua` les remplace toutes par de l'Unicode
+courant (`◉ ○ ✸`, `☐ ☑`), et désactive `sign`, `link` et `code.language_icon`.
+
+Si le terminal passe un jour à une Nerd Font, mettre `vim.g.have_nerd_font = true` et
+supprimer ces blocs — l'en-tête de `markdown.lua` le rappelle. (La section
+« Dépendances externes » ci-dessous mentionne une Nerd Font comme requise : en pratique la
+config tourne sans, kickstart dégradant proprement.)
+
 ## Format des fichiers de plugin (`vim.pack`)
 
 Avec `vim.pack`, un fichier de `custom/plugins/` **n'est plus une spec retournée** comme avec
