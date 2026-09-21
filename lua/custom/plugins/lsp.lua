@@ -49,8 +49,9 @@ local servers = {
   -- diagnostics.
   --
   -- ATTENTION : mesuré ici, il met **~20 s** à s'attacher, de façon reproductible (à
-  -- froid comme à chaud). Ce n'est ni le démarrage de node (70 ms), ni l'absence de
-  -- shellcheck, ni l'analyse de fond (`backgroundAnalysisMaxFiles = 0` n'y change rien) —
+  -- froid comme à chaud). Écartés par la mesure : le démarrage de node (70 ms), l'absence
+  -- de shellcheck, l'analyse de fond (`backgroundAnalysisMaxFiles = 0` n'y change rien),
+  -- le shell (`SHELL=bash` ou `sh` : identique) et la version de node (24 comme 26) —
   -- cause non identifiée. L'attache est asynchrone : l'éditeur reste utilisable, la
   -- complétion arrive juste en retard. Si ça devient gênant, commenter cette ligne ;
   -- treesitter continue de colorer les scripts.

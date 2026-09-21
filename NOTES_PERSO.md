@@ -161,9 +161,10 @@ intelephense   0.3 s      html       0.3 s      rust_analyzer   0.0 s
 cssls          0.2 s      bashls    21.0 s      <- anomalie
 ```
 
-**`bashls` met ~20 s**, de facon reproductible, a froid comme a chaud. Ce n'est ni le
-demarrage de node (70 ms), ni l'absence de shellcheck, ni l'analyse de fond
-(`backgroundAnalysisMaxFiles = 0` n'y change rien) — cause non identifiee. L'attache etant
+**`bashls` met ~20 s**, de facon reproductible, a froid comme a chaud. Ecartes par la
+mesure : le demarrage de node (70 ms), l'absence de shellcheck, l'analyse de fond
+(`backgroundAnalysisMaxFiles = 0` n'y change rien), le shell (`SHELL=bash` ou `sh` :
+identique) et la version de node (24 comme 26) — cause non identifiee. L'attache etant
 asynchrone, l'editeur reste utilisable et la completion arrive en retard. Pour s'en
 debarrasser : commenter `bashls` dans `lsp.lua`, treesitter continue de colorer.
 
