@@ -17,8 +17,23 @@ personnalisations.
 
 - **`master`** : miroir exact de `upstream/master` (dépôt officiel de Kickstart).
   **Ne jamais y commiter de modifications personnelles.**
-- **`custom`** : branche où vivent toutes les personnalisations.
+- **`custom`** : branche où vivent toutes les personnalisations. **C'est la branche de
+  travail** — c'est elle qui est déployée, jamais `master`.
 - **`custom-pre-0.12`** : archive de l'ancienne config lazy.nvim (avant migration `vim.pack`).
+
+`custom` est **`master` + mes personnalisations**, et se met à jour en **fusionnant**
+`master` dedans (voir la procédure plus bas). Elle n'est jamais rebasée : son historique
+est publié sur `origin`, et un rebase obligerait à un force-push pour retomber sur le même
+arbre.
+
+Les deux étiquettes bougent indépendamment. Si `git branch -vv` annonce
+`master [origin/master: behind N]`, ça ne veut **pas** dire que la config est en retard :
+le plus souvent `custom` a déjà fusionné ces commits et seule l'étiquette `master` locale
+a pris du retard. La vérification qui tranche :
+
+```bash
+git merge-base --is-ancestor master custom && echo "custom est a jour"
+```
 
 ## Mes personnalisations
 
@@ -41,10 +56,18 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | Raccourci | Mode | Action | Défini dans |
 | :-------- | :--- | :----- | :---------- |
 | `<leader>tm` | n | bascule le rendu markdown (`:RenderMarkdown toggle`) | `markdown.lua` |
+| `<leader>pp` | n | état des plugins, sans réseau (`:Pack`) | `pack.lua` |
+| `<leader>pu` | n | chercher les mises à jour (`:PackUpdate`) | `pack.lua` |
+| `<leader>pc` | n | supprimer les plugins retirés (`:PackClean`) | `pack.lua` |
+
+Ce sont les seuls raccourcis que j'ajoute ; tout le reste vient de kickstart. Pour
+retrouver la liste à jour sans ouvrir ce fichier : `:nmap <leader>`.
 
 `<leader>t` est le groupe `[T]oggle` déjà déclaré par la `spec` de which-key dans
 `init.lua` (SECTION 4) : un raccourci de bascule ajouté ici y apparaît tout seul, il suffit
-de lui donner un `desc`. Taper `<leader>t` et attendre liste le groupe.
+de lui donner un `desc`. Taper `<leader>t` et attendre liste le groupe. `<leader>p` n'est
+déclaré nulle part comme groupe — which-key affiche quand même les trois raccourcis, mais
+sans titre ; ajouter `{ '<leader>p', group = '[P]ack' }` à la `spec` si ça gêne.
 
 Les seuls changements dans les fichiers de kickstart lui-même :
 
@@ -53,7 +76,8 @@ Les seuls changements dans les fichiers de kickstart lui-même :
 - `.gitignore` : commenter `nvim-pack-lock.json` pour suivre le lockfile en version control.
 
 > Garder ces deux modifications aussi minimales que possible : ce sont les seuls points de
-> conflit possibles lors d'un rebase.
+> conflit possibles lors d'une fusion de `master`. Les fichiers de
+> `lua/custom/plugins/` n'entrent jamais en conflit — kickstart n'y touche pas.
 
 ## Rendu markdown : le désactiver pour copier
 
@@ -99,9 +123,7 @@ s'afficheraient en carrés vides : `markdown.lua` les remplace toutes par de l'U
 courant (`◉ ○ ✸`, `☐ ☑`), et désactive `sign`, `link` et `code.language_icon`.
 
 Si le terminal passe un jour à une Nerd Font, mettre `vim.g.have_nerd_font = true` et
-supprimer ces blocs — l'en-tête de `markdown.lua` le rappelle. (La section
-« Dépendances externes » ci-dessous mentionne une Nerd Font comme requise : en pratique la
-config tourne sans, kickstart dégradant proprement.)
+supprimer ces blocs — l'en-tête de `markdown.lua` le rappelle.
 
 ## Format des fichiers de plugin (`vim.pack`)
 
@@ -120,21 +142,49 @@ Pour épingler une version : `vim.pack.add { { src = '...', version = vim.versio
 
 ## Procédure de mise à jour de kickstart
 
+### 0. Vérifier qu'il y a bien quelque chose à faire
+
+```bash
+git fetch upstream
+git merge-base --is-ancestor upstream/master custom && echo "deja a jour, rien a faire"
+```
+
+À faire **avant** de regarder `git branch -vv` : un `master [behind N]` ne prouve rien,
+c'est souvent juste l'étiquette locale qui traîne (voir « Structure des branches »).
+
 ### 1. Mettre à jour la branche `master` locale
 
 ```bash
 git checkout master
-git pull upstream master
+git merge --ff-only upstream/master   # doit toujours passer : master ne porte aucun commit perso
+git push origin master
 ```
 
-### 2. Rejouer les personnalisations par-dessus
+`--ff-only` plutôt que `git pull` : si la fusion n'est pas en avance rapide, c'est qu'un
+commit personnel a atterri sur `master` par erreur. Mieux vaut que git refuse.
+
+### 2. Fusionner `master` dans `custom`
 
 ```bash
 git checkout custom
-git rebase master
+git merge master
 ```
 
-En cas de conflit : résoudre, `git add .`, puis `git rebase --continue`.
+**Fusionner, pas rebaser.** `custom` est publiée sur `origin` : un `git rebase master`
+rejoue les ~10 commits personnels un par un, demande de résoudre le même conflit `init.lua`
+à chaque passage, impose un force-push, et retombe sur exactement le même arbre. Aucun gain.
+
+En cas de conflit — seulement `init.lua` et `.gitignore`, jamais `lua/custom/plugins/` :
+résoudre, `git add .`, puis `git commit`.
+
+Puis vérifier que la config charge encore avant de pousser :
+
+```bash
+NVIM_APPNAME=nvim-kickstart nvim --headless -c 'qa!'   # doit sortir sans erreur
+git push origin custom
+```
+
+Dans nvim, compléter par `:checkhealth` sur les plugins touchés.
 
 Si la mise à jour upstream est massive (réécriture d'`init.lua`), il est plus rapide de
 repartir propre :
@@ -142,7 +192,7 @@ repartir propre :
 ```bash
 git branch custom-pre-<date> custom   # archive
 git checkout custom && git reset --hard master
-# recréer les 4 fichiers de lua/custom/plugins/ + les 2 lignes d'init.lua/.gitignore
+# recréer les 8 fichiers de lua/custom/plugins/ + les 2 lignes d'init.lua/.gitignore
 ```
 
 ### 3. Mettre à jour les plugins
@@ -164,7 +214,12 @@ disque tant qu'on ne lance pas `:PackClean`.
 Les commandes brutes en dessous, si besoin : `:lua vim.pack.update(nil, { offline = true })`
 et `:lua vim.pack.update()`.
 
-### 4. Forcer la mise à jour du fork distant (si `master` a été réinitialisée)
+### 4. Forcer la mise à jour du fork distant
+
+À n'utiliser que si `upstream` a réécrit son historique, ou après un
+`reset --hard` de l'étape 2. En fonctionnement normal, `git push origin master` de
+l'étape 1 suffit, et **`custom` ne se force-pushe jamais** — c'est tout l'intérêt de
+fusionner plutôt que de rebaser.
 
 ```bash
 git checkout master
@@ -173,6 +228,10 @@ git push origin master --force
 
 ## Dépendances externes requises
 
-`git`, `make`, `unzip`, `gcc`, `ripgrep`, `fd`, **`tree-sitter` (CLI)**, un Nerd Font.
+`git`, `make`, `unzip`, `gcc`, `ripgrep`, `fd`, **`tree-sitter` (CLI)**.
 Le CLI `tree-sitter` est devenu obligatoire : nvim-treesitter est passé sur sa branche `main`
 et compile les parsers avec.
+
+Une **Nerd Font est facultative** : `vim.g.have_nerd_font` est à `false`, kickstart dégrade
+proprement et mes plugins sont réglés pour s'en passer (voir « Rendu markdown » ci-dessus).
+La passer à `true` suppose d'avoir aussi changé la police du terminal.
