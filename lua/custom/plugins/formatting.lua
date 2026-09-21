@@ -20,6 +20,16 @@ for _, server in ipairs { 'stylua', 'sqruff' } do
 end
 
 -- Filetypes formatés automatiquement à la sauvegarde
+--
+-- PAS de `markdown` ici, délibérément. Prettier réécrit le markdown au-delà de la mise en
+-- forme : il convertit tout l'italique `*terme*` en `_terme_` et bourre les cellules des
+-- tableaux d'espaces. Sur une fiche du memento, un simple `:w` produisait 52 lignes
+-- modifiées — et `m check` restait vert, donc rien ne prévenait. Le memento a ses propres
+-- conventions (CONVENTIONS.md prescrit l'italique en astérisques, `(*wildcard*)`) et
+-- prettier les contredit en silence.
+--
+-- Le formateur reste déclaré dans `formatters_by_ft` plus bas : `<leader>f` formate un
+-- markdown à la demande, quand c'est vraiment ce qu'on veut.
 local format_on_save_filetypes = {
   javascript = true,
   typescript = true,
@@ -28,7 +38,6 @@ local format_on_save_filetypes = {
   json = true,
   jsonc = true,
   yaml = true,
-  markdown = true,
   html = true,
   css = true,
   scss = true,

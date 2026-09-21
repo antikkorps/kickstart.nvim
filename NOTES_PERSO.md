@@ -50,6 +50,7 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | `autopairs.lua` | active `check_ts` sur le nvim-autopairs de kickstart |
 | `pack.lua` | commandes `:Pack` / `:PackUpdate` / `:PackClean` (confort autour de `vim.pack`) |
 | `markdown.lua` | render-markdown.nvim : rendu du markdown dans le tampon (tableaux alignés) |
+| `lsp.lua` | serveurs LSP de mes langages (init.lua ne declare que lua_ls) |
 
 ### Raccourcis ajoutés par mes plugins
 
@@ -124,6 +125,70 @@ courant (`◉ ○ ✸`, `☐ ☑`), et désactive `sign`, `link` et `code.langua
 
 Si le terminal passe un jour à une Nerd Font, mettre `vim.g.have_nerd_font = true` et
 supprimer ces blocs — l'en-tête de `markdown.lua` le rappelle.
+
+## Serveurs LSP
+
+`init.lua` (SECTION 8) ne declare que `lua_ls`. `lua/custom/plugins/lsp.lua` ajoute les
+autres apres coup, sans toucher a l'amont — meme principe que `formatting.lua`.
+
+| Serveur | Langage | Paquet Mason |
+| :------ | :------ | :----------- |
+| `ts_ls` | JavaScript / TypeScript | typescript-language-server |
+| `intelephense` | PHP, WordPress | intelephense |
+| `rust_analyzer` | Rust | **aucun** — `rustup component add rust-analyzer` |
+| `bashls` | shell | bash-language-server + shellcheck |
+| `html` / `cssls` / `jsonls` | web | html-lsp, css-lsp, json-lsp |
+| `marksman` | markdown | marksman |
+
+Deux choix a connaitre :
+
+- **`rust_analyzer` ne vient pas de Mason.** `rustup component add rust-analyzer` fournit
+  la version qui correspond exactement a la toolchain active ; le binaire Mason, lui,
+  derive de sa propre version. Il est trouve via `~/.cargo/bin` dans le PATH.
+- **`intelephense` recoit une liste de `stubs` incluant `wordpress`.** Sans elle, chaque
+  `add_action`, `WP_Query`, `wp_enqueue_script` est signale comme fonction inconnue.
+
+Ce que ca apporte : complétion (blink.cmp, deja installe par kickstart), diagnostics a la
+frappe, `grd` aller a la definition, `grn` renommer, `gra` actions de code. `marksman` est
+la pour le memento : il complete les liens relatifs entre fiches et signale un lien mort au
+moment ou on l'ecrit, au lieu d'attendre `m check`.
+
+### Delais d'attache mesures
+
+```
+ts_ls          0.1 s      jsonls     0.1 s      marksman        0.9 s
+intelephense   0.3 s      html       0.3 s      rust_analyzer   0.0 s
+cssls          0.2 s      bashls    21.0 s      <- anomalie
+```
+
+**`bashls` met ~20 s**, de facon reproductible, a froid comme a chaud. Ce n'est ni le
+demarrage de node (70 ms), ni l'absence de shellcheck, ni l'analyse de fond
+(`backgroundAnalysisMaxFiles = 0` n'y change rien) — cause non identifiee. L'attache etant
+asynchrone, l'editeur reste utilisable et la completion arrive en retard. Pour s'en
+debarrasser : commenter `bashls` dans `lsp.lua`, treesitter continue de colorer.
+
+### Ajouter un serveur
+
+Chercher son nom dans `:help lspconfig-all`, l'ajouter a la table `servers` de `lsp.lua`,
+relancer nvim (mason-tool-installer installe le paquet). `:checkhealth vim.lsp` dit qui
+tourne reellement sur le tampon courant.
+
+> `lsp.lua` rappelle `mason-tool-installer.setup`, ce qui **remplace** la configuration
+> posee par `init.lua`. Sa liste `ensure_installed` doit donc rester complete — d'ou
+> `lua_ls` qui y figure alors qu'il vient de l'amont.
+
+## Formatage
+
+`formatting.lua` surcharge le conform.nvim d'`init.lua` : prettier sur JS/TS, JSON, YAML,
+HTML, CSS, et stylua sur Lua, avec format-on-save.
+
+**Le markdown est volontairement exclu du format-on-save.** Prettier ne se contente pas de
+mettre en forme : il convertit tout l'italique `*terme*` en `_terme_` et bourre les
+cellules des tableaux d'espaces. Sur une fiche du memento, un simple `:w` produisait
+**52 lignes modifiees**, et `m check` restait vert — rien ne prevenait. Le memento a ses
+propres conventions (`CONVENTIONS.md` prescrit `(*wildcard*)` en asterisques).
+
+Le formateur reste declare : `<leader>f` formate un markdown a la demande.
 
 ## Format des fichiers de plugin (`vim.pack`)
 
