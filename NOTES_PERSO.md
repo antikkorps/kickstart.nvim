@@ -34,6 +34,7 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | `autotag.lua` | fermeture/renommage auto des balises HTML, JSX, Vue |
 | `autopairs.lua` | active `check_ts` sur le nvim-autopairs de kickstart |
 | `pack.lua` | commandes `:Pack` / `:PackUpdate` / `:PackClean` (confort autour de `vim.pack`) |
+| `markdown.lua` | render-markdown.nvim : rendu du markdown dans le tampon (tableaux alignés) |
 
 Les seuls changements dans les fichiers de kickstart lui-même :
 
