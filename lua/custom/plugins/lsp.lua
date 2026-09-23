@@ -40,10 +40,9 @@ local servers = {
     },
   },
 
-  -- Rust. PAS installé par Mason : `rustup component add rust-analyzer` fournit la
-  -- version qui correspond exactement à la toolchain active, là où le binaire Mason
-  -- dérive de la version de cargo. Il est trouvé via ~/.cargo/bin dans le PATH.
-  rust_analyzer = {},
+  -- Rust : PAS ici. rustaceanvim (voir rust.lua) configure et attache rust-analyzer
+  -- lui-même ; l'ajouter à cette table attacherait un second client au même tampon
+  -- (diagnostics et actions de code en double).
 
   -- Shell. Paquet Mason : bash-language-server, complété par shellcheck pour les
   -- diagnostics.
@@ -77,11 +76,10 @@ end
 
 -- Installation automatique. `init.lua` appelle déjà `mason-tool-installer.setup` avec la
 -- seule clé `lua_ls` ; ce second appel remplace sa configuration, donc la liste doit être
--- complète — d'où `lua_ls` répété ici. rust_analyzer en est volontairement absent (voir
--- plus haut).
+-- complète — d'où `lua_ls` répété ici.
 local ensure_installed = { 'lua_ls' }
 for name in pairs(servers) do
-  if name ~= 'rust_analyzer' then table.insert(ensure_installed, name) end
+  table.insert(ensure_installed, name)
 end
 
 -- Formateurs et linters, que Mason doit aussi fournir. `shellcheck` est utilisé par

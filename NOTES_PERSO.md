@@ -51,6 +51,7 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | `pack.lua` | commandes `:Pack` / `:PackUpdate` / `:PackClean` (confort autour de `vim.pack`) |
 | `markdown.lua` | render-markdown.nvim : rendu du markdown dans le tampon (tableaux alignés) |
 | `lsp.lua` | serveurs LSP de mes langages (init.lua ne declare que lua_ls) |
+| `rust.lua` | rustaceanvim : surcouche rust-analyzer (diagnostics rustc complets, runnables) |
 
 ### Raccourcis ajoutés par mes plugins
 
@@ -60,6 +61,9 @@ Tout est confiné dans `lua/custom/plugins/` (chargé automatiquement par
 | `<leader>pp` | n | état des plugins, sans réseau (`:Pack`) | `pack.lua` |
 | `<leader>pu` | n | chercher les mises à jour (`:PackUpdate`) | `pack.lua` |
 | `<leader>pc` | n | supprimer les plugins retirés (`:PackClean`) | `pack.lua` |
+| `<leader>rd` | n | message rustc complet du diagnostic (`:RustLsp renderDiagnostic`) | `rust.lua` |
+| `<leader>re` | n | expliquer l'erreur, façon `rustc --explain` (`:RustLsp explainError`) | `rust.lua` |
+| `<leader>rr` | n | lancer le test sous le curseur (`:RustLsp runnables`) | `rust.lua` |
 
 Ce sont les seuls raccourcis que j'ajoute ; tout le reste vient de kickstart. Pour
 retrouver la liste à jour sans ouvrir ce fichier : `:nmap <leader>`.
@@ -68,7 +72,9 @@ retrouver la liste à jour sans ouvrir ce fichier : `:nmap <leader>`.
 `init.lua` (SECTION 4) : un raccourci de bascule ajouté ici y apparaît tout seul, il suffit
 de lui donner un `desc`. Taper `<leader>t` et attendre liste le groupe. `<leader>p` n'est
 déclaré nulle part comme groupe — which-key affiche quand même les trois raccourcis, mais
-sans titre ; ajouter `{ '<leader>p', group = '[P]ack' }` à la `spec` si ça gêne.
+sans titre ; ajouter `{ '<leader>p', group = '[P]ack' }` à la `spec` si ça gêne. Même chose
+pour `<leader>r` (Rust), qui n'apparaît que sur les tampons Rust puisqu'il est défini dans
+l'`on_attach` du serveur.
 
 Les seuls changements dans les fichiers de kickstart lui-même :
 

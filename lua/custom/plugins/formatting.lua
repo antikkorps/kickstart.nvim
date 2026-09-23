@@ -42,6 +42,9 @@ local format_on_save_filetypes = {
   css = true,
   scss = true,
   lua = true,
+  -- rustfmt n'a aucune option de style à négocier, et la CI de runIt fait tourner
+  -- `cargo fmt --check` : autant que ce soit réglé au `:w` plutôt qu'au push.
+  rust = true,
 }
 
 local prettier = { 'prettierd', 'prettier', stop_after_first = true }
@@ -69,5 +72,9 @@ require('conform').setup {
     html = prettier,
     css = prettier,
     scss = prettier,
+    -- rustfmt vient de rustup (~/.cargo/bin), pas de Mason. conform lit l'édition
+    -- dans le Cargo.toml du projet, donc c'est exactement le même formatage que
+    -- `cargo fmt` en ligne de commande.
+    rust = { 'rustfmt' },
   },
 }
